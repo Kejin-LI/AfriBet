@@ -1,0 +1,198 @@
+src/components/AppShell.tsx
+  s_c11dcee41b892b::t_8969a378b9710a 424-427,582-585 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a7b09e5c0c32deb865b826a","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[424,427]},{"Range":[582,585]}]}]}
+  s_c11dcee41b892b::t_38ea528d590fe9 586
+.github/workflows/deploy.yml
+  s_c11dcee41b892b::t_c1675599b7fd2a 35-36 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a7b0a79c0c32deb865b82d4","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Range":[35,36]}]}]}
+vite.config.ts
+  s_c11dcee41b892b::t_a112a806f60ee5 7 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a7b0a70c0c32deb865b82bd","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Single":7}]}]}
+src/features/agent/AgentPage.tsx
+  s_c11dcee41b892b::t_5784fb26e971ed 336,340,365 gitai:{"mixed_line_ranges":[],"operations":[{"operation_id":"6a7b09dec0c32deb865b824e","tool_type":"agent","tool_id":"apply_patch","line_ranges":[{"Single":336},{"Single":340},{"Single":365}]}]}
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "5809a8b62443fc37020c17edd296f6c3c2d70594",
+  "prompts": {},
+  "humans": {
+    "h_56e9962d157417": {
+      "author": "li.kejin <li.kejin@bytedance.com>"
+    }
+  },
+  "sessions": {
+    "s_c11dcee41b892b": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "6a79bc49c0c32deb865b5f6d",
+        "model": "gpt-5.5__dev"
+      },
+      "human_author": "li.kejin <li.kejin@bytedance.com>"
+    }
+  },
+  "attestation_metadata": {
+    ".github/workflows/deploy.yml": [
+      {
+        "hash": "s_c11dcee41b892b::t_c1675599b7fd2a",
+        "line_ranges": [
+          {
+            "Range": [
+              35,
+              36
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a7b0a79c0c32deb865b82d4",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  35,
+                  36
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/components/AppShell.tsx": [
+      {
+        "hash": "s_c11dcee41b892b::t_8969a378b9710a",
+        "line_ranges": [
+          {
+            "Range": [
+              424,
+              427
+            ]
+          },
+          {
+            "Range": [
+              582,
+              585
+            ]
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a7b09e5c0c32deb865b826a",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Range": [
+                  424,
+                  427
+                ]
+              },
+              {
+                "Range": [
+                  582,
+                  585
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "src/features/agent/AgentPage.tsx": [
+      {
+        "hash": "s_c11dcee41b892b::t_5784fb26e971ed",
+        "line_ranges": [
+          {
+            "Single": 336
+          },
+          {
+            "Single": 340
+          },
+          {
+            "Single": 365
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a7b09dec0c32deb865b824e",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Single": 336
+              },
+              {
+                "Single": 340
+              },
+              {
+                "Single": 365
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "vite.config.ts": [
+      {
+        "hash": "s_c11dcee41b892b::t_a112a806f60ee5",
+        "line_ranges": [
+          {
+            "Single": 7
+          }
+        ],
+        "mixed_line_ranges": [],
+        "operations": [
+          {
+            "operation_id": "6a7b0a70c0c32deb865b82bd",
+            "tool_type": "agent",
+            "tool_id": "apply_patch",
+            "line_ranges": [
+              {
+                "Single": 7
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "remote_transcripts": {
+    "s_c11dcee41b892b": {
+      "tool": "trae",
+      "conversation_id": "6a79bc49c0c32deb865b5f6d",
+      "session_id": "6a79bc49c0c32deb865b5f6d",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_c11dcee41b892b::t_5784fb26e971ed": {
+      "tool": "trae",
+      "conversation_id": "6a79bc49c0c32deb865b5f6d",
+      "session_id": "6a79bc49c0c32deb865b5f6d",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_c11dcee41b892b::t_8969a378b9710a": {
+      "tool": "trae",
+      "conversation_id": "6a79bc49c0c32deb865b5f6d",
+      "session_id": "6a79bc49c0c32deb865b5f6d",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_c11dcee41b892b::t_a112a806f60ee5": {
+      "tool": "trae",
+      "conversation_id": "6a79bc49c0c32deb865b5f6d",
+      "session_id": "6a79bc49c0c32deb865b5f6d",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    },
+    "s_c11dcee41b892b::t_c1675599b7fd2a": {
+      "tool": "trae",
+      "conversation_id": "6a79bc49c0c32deb865b5f6d",
+      "session_id": "6a79bc49c0c32deb865b5f6d",
+      "status": "remote_only",
+      "message": "Remote transcript resolution is not implemented yet for TRAE prompts."
+    }
+  }
+}
