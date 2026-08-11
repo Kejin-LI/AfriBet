@@ -4,7 +4,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/AfriBet/',
+  base: process.env.GITHUB_PAGES === 'true' ? '/AfriBet/' : '/',
   build: {
     sourcemap: 'hidden',
   },

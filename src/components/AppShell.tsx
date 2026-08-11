@@ -421,7 +421,10 @@ export function AppShell({ children }: AppShellProps) {
         </main>
       </div>
 
-      <div ref={mobileAccountMenuRef} className="fixed right-4 top-4 z-[130] lg:hidden">
+      <div
+        ref={mobileAccountMenuRef}
+        className={cn('fixed right-4 z-[130] lg:hidden', isAgentChatPage ? 'top-3' : 'top-4')}
+      >
         {isAccountMenuOpen && (
           <div className={mobileAccountMenuClass}>
             <div className="mb-4 flex items-center justify-between">
@@ -576,10 +579,11 @@ export function AppShell({ children }: AppShellProps) {
         <button
           type="button"
           onClick={() => setIsAccountMenuOpen((value) => !value)}
-          className="grid h-11 w-11 place-items-center rounded-2xl border border-white/12 bg-[#0D1220]/88 text-sm font-black text-cyan-50 shadow-2xl backdrop-blur-2xl transition hover:bg-white/12"
-        >
-          K
-        </button>
+          className={cn(
+            'grid place-items-center rounded-2xl border border-white/12 bg-[#0D1220]/88 text-sm font-black text-cyan-50 shadow-2xl backdrop-blur-2xl transition hover:bg-white/12',
+            isAgentChatPage ? 'h-10 w-10' : 'h-11 w-11',
+          )}
+        >K</button>
       </div>
 
       <nav className="fixed inset-x-3 bottom-3 z-50 grid grid-cols-5 rounded-[28px] border border-white/12 bg-[#0D1220]/88 p-2 shadow-2xl backdrop-blur-2xl lg:hidden">

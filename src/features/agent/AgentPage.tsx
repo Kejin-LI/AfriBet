@@ -333,11 +333,11 @@ export function AgentChatPage() {
     <div className="flex min-h-[calc(100vh-56px)] flex-col">
       <div className="sticky top-0 z-10 -mx-4 border-b border-white/8 bg-[#070A12]/82 px-4 py-3 backdrop-blur-2xl sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
         <div className="relative mx-auto max-w-5xl">
-          <div className="truncate px-24 text-center text-sm font-semibold text-white/48">
+          <div className="truncate px-36 text-center text-sm font-semibold text-white/48 lg:px-24">
             {latestQuestion}
           </div>
 
-          <div className="absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-1">
+          <div className="absolute right-12 top-1/2 flex -translate-y-1/2 items-center gap-1 lg:right-0">
             <button
               type="button"
               aria-label={copy.history}
@@ -362,7 +362,7 @@ export function AgentChatPage() {
           </div>
 
           {isHistoryOpen ? (
-            <div className="agent-history-menu absolute right-0 top-12 z-20 w-[360px] max-w-[calc(100vw-32px)] rounded-[22px] p-2 text-left">
+            <div className="agent-history-menu absolute right-12 top-12 z-20 w-[360px] max-w-[calc(100vw-32px)] rounded-[22px] p-2 text-left lg:right-0">
               <div className="px-3 py-2 text-[11px] font-black uppercase tracking-[0.18em] text-white/34">
                 {copy.recentChats}
               </div>
