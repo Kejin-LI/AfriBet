@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Navigate, Outlet, Route, BrowserRouter as Router, Routes, useParams } from 'react-router-dom';
+import { Navigate, Outlet, Route, HashRouter as Router, Routes, useParams } from 'react-router-dom';
 import { AppShell } from '@/components/AppShell';
 import { AgentChatPage, AgentPage } from '@/features/agent/AgentPage';
 import { useI18n, isSupportedLocale } from '@/features/i18n/useI18n';
@@ -12,7 +12,7 @@ import { PortfolioPage } from '@/features/portfolio/PortfolioPage';
 
 export default function App() {
   return (
-    <Router basename={import.meta.env.BASE_URL}>
+    <Router>
       <Routes>
         <Route path="/" element={<Navigate to="/sw" replace />} />
         <Route path="/:locale" element={<LocalizedShell />}>

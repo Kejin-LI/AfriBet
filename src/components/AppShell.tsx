@@ -160,12 +160,12 @@ export function AppShell({ children }: AppShellProps) {
 
   function switchAccountMenuLocale(nextLocale: Locale) {
     setLocale(nextLocale);
-    const currentPath = window.location.pathname;
+    const currentPath = location.pathname;
     const currentLocale = params.locale;
     const nextPath = currentLocale
       ? currentPath.replace(`/${currentLocale}`, `/${nextLocale}`)
       : `/${nextLocale}${currentPath}`;
-    navigate(nextPath + window.location.search, { replace: true });
+    navigate(nextPath + location.search, { replace: true });
     setIsLanguageMenuOpen(false);
   }
 
