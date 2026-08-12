@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import {
-  Brain,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -30,7 +29,6 @@ type AppShellProps = {
 };
 
 const navItems = [
-  { key: 'nav.agent', path: 'agent', icon: Brain },
   { key: 'nav.home', path: '', icon: TrendingUp },
   { key: 'nav.markets', path: 'markets', icon: Landmark },
   { key: 'nav.portfolio', path: 'portfolio', icon: WalletCards },

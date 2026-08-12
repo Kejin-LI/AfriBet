@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Bookmark, Flame, Link2, MessageCircle, TrendingUp } from 'lucide-react';
+import { Flame, MessageCircle, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { ProbabilityChart } from '@/components/ProbabilityChart';
 import { Sparkline } from '@/components/Sparkline';
+import { TradeModal } from '@/components/TradeModal';
 import { useI18n } from '@/features/i18n/useI18n';
-import { formatCompactNumber } from '@/lib/format';
+import { formatCompactNumber, formatCurrency } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { leaderboardService } from '@/services/leaderboardService';
 import { marketService } from '@/services/marketService';
-import type { Locale, Market, OutcomeId } from '@/types/domain';
+import { useAppStore } from '@/store/useAppStore';
+import type { Leaderboard, Locale, Market, OutcomeId } from '@/types/domain';
 
 const pageCopy: Record<
   Locale,
@@ -22,6 +24,19 @@ const pageCopy: Record<
     explore: string;
     ends: string;
     tradeVolume: string;
+    instantPick: string;
+    peopleJoined: string;
+    agentPick: string;
+    balance: string;
+    leaderboard: string;
+    hotLive: string;
+    endsIn: string;
+    thinkYes: string;
+    watchingNow: string;
+    liveReactions: string;
+    recentDemoPicks: string;
+    demoCash: string;
+    justNow: string;
   }
 > = {
   sw: {
@@ -35,6 +50,19 @@ const pageCopy: Record<
     explore: 'Yote',
     ends: 'Mwisho',
     tradeVolume: 'Kiasi',
+    instantPick: 'Chagua sasa',
+    peopleJoined: 'wamejiunga',
+    agentPick: 'Kwa nini ni moto',
+    balance: 'Salio',
+    leaderboard: 'Wanaoongoza',
+    hotLive: 'Moto sasa',
+    endsIn: 'Mwisho ndani ya',
+    thinkYes: 'wanaamini NDIYO',
+    watchingNow: 'wanatazama sasa',
+    liveReactions: 'Sauti za moja kwa moja',
+    recentDemoPicks: 'Chaguo za Demo',
+    demoCash: 'DC',
+    justNow: 'sasa hivi',
   },
   en: {
     featured: 'Featured market',
@@ -47,6 +75,19 @@ const pageCopy: Record<
     explore: 'All',
     ends: 'Ends',
     tradeVolume: 'Volume',
+    instantPick: 'Pick now',
+    peopleJoined: 'joined',
+    agentPick: "Why it's hot",
+    balance: 'Balance',
+    leaderboard: 'Leaderboard',
+    hotLive: 'Hot live',
+    endsIn: 'Ends in',
+    thinkYes: 'think YES',
+    watchingNow: 'watching now',
+    liveReactions: 'Live reactions',
+    recentDemoPicks: 'Recent demo picks',
+    demoCash: 'DC',
+    justNow: 'just now',
   },
   zh: {
     featured: '精选市场',
@@ -59,6 +100,19 @@ const pageCopy: Record<
     explore: '全部',
     ends: '截止',
     tradeVolume: '交易量',
+    instantPick: '立即选择',
+    peopleJoined: '已参与',
+    agentPick: '为什么热门',
+    balance: '余额',
+    leaderboard: '排行榜',
+    hotLive: '热门进行中',
+    endsIn: '剩余',
+    thinkYes: '认为会发生',
+    watchingNow: '正在围观',
+    liveReactions: '实时弹幕',
+    recentDemoPicks: '模拟下注动态',
+    demoCash: 'DC',
+    justNow: '刚刚',
   },
 };
 
@@ -68,6 +122,15 @@ type MarketComment = {
   avatar: string;
   createdAt: string;
   body: Record<Locale, string>;
+};
+
+type DemoPick = {
+  id: string;
+  user: string;
+  avatarUrl: string;
+  outcomeId: OutcomeId;
+  amount: number;
+  secondsAgo: number;
 };
 
 const marketComments: Record<string, MarketComment[]> = {
@@ -513,6 +576,104 @@ const marketComments: Record<string, MarketComment[]> = {
   ],
 };
 
+const demoPickProfiles = [
+  {
+    user: 'KariakooEdge',
+    avatarPrompt: 'realistic portrait of a young Tanzanian man, street market style, warm evening light',
+  },
+  {
+    user: 'DarSignal',
+    avatarPrompt: 'realistic portrait of a Tanzanian woman, casual sports fan, Dar es Salaam night lights',
+  },
+  {
+    user: 'MwanzaPulse',
+    avatarPrompt: 'realistic portrait of an East African man, mobile-first trader, soft studio light',
+  },
+  {
+    user: 'Mikocheni Odds',
+    avatarPrompt: 'realistic portrait of a Tanzanian woman, confident football fan, neon city background',
+  },
+  {
+    user: 'ZanzibarBrief',
+    avatarPrompt: 'realistic portrait of a young Zanzibari man, coastal evening atmosphere, cinematic light',
+  },
+  {
+    user: 'ArushaQuant',
+    avatarPrompt: 'realistic portrait of an East African woman, smart casual, amber sports bar lighting',
+  },
+  {
+    user: 'DodomaLine',
+    avatarPrompt: 'realistic portrait of a Tanzanian man, casual hoodie, dramatic dark background',
+  },
+  {
+    user: 'CoastBacker',
+    avatarPrompt: 'realistic portrait of a Tanzanian woman, excited match day mood, soft rose lighting',
+  },
+  {
+    user: 'MbeyaSharp',
+    avatarPrompt: 'realistic portrait of an East African man, focused phone user, high contrast light',
+  },
+  {
+    user: 'KilimanjaroBet',
+    avatarPrompt: 'realistic portrait of an East African woman, sports jersey, night crowd atmosphere',
+  },
+];
+
+const demoPickAmounts = [1000, 500, 5000, 2000, 1500, 800, 3000, 1200, 700, 2500];
+const demoPickSeconds = [8, 15, 24, 39, 52, 68, 77, 86, 104, 119];
+
+function getAvatarUrl(prompt: string) {
+  const fullPrompt = [
+    prompt,
+    'realistic profile avatar for a fintech app',
+    'square crop, face centered, natural skin texture, no text, no logo, no watermark',
+  ].join(', ');
+
+  return `https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=${encodeURIComponent(fullPrompt)}&image_size=square`;
+}
+
+function getWatchingNow(market: Market) {
+  return Math.max(96, Math.round(market.traders * 0.22 + Math.abs(market.change24h) * 18));
+}
+
+function getDemoPicks(market: Market): DemoPick[] {
+  const firstOutcome = market.outcomes[0]?.id ?? 'yes';
+  const secondOutcome = market.outcomes[1]?.id ?? 'no';
+
+  return demoPickProfiles.map((profile, index) => ({
+    id: `${market.id}-${profile.user}`,
+    user: profile.user,
+    avatarUrl: getAvatarUrl(profile.avatarPrompt),
+    outcomeId: index % 4 === 1 ? secondOutcome : firstOutcome,
+    amount: demoPickAmounts[index] ?? 1000,
+    secondsAgo: demoPickSeconds[index] ?? 45,
+  }));
+}
+
+const categoryCoverPrompts: Record<Market['category'], string> = {
+  football: 'Tanzania football derby night, floodlit stadium, roaring crowd, two rival teams facing off, red and green light tension',
+  economy: 'Dar es Salaam street market at night, currency exchange energy, Tanzanian shilling and dollar atmosphere, busy traders, gold light',
+  crypto: 'African mobile crypto trading scene, neon market screens, young traders watching price movement, electric blue and violet light',
+  entertainment: 'Bongo Flava music stage in Tanzania, concert lights, excited fans, social media buzz, rose and violet neon atmosphere',
+  weather: 'Dar es Salaam skyline under dramatic storm clouds, rain glow, humid coastal air, cyan lightning in the distance',
+  politics: 'Tanzania civic debate atmosphere, city hall lights, newspaper headlines, serious crowd silhouettes, dramatic amber lighting',
+};
+
+function getMarketCoverUrl(market: Market) {
+  const title = market.localizedContent.en.title;
+  const prompt = [
+    'cinematic realistic website hero cover',
+    categoryCoverPrompts[market.category],
+    `prediction market topic: ${title}`,
+    'high energy community betting atmosphere',
+    'dark negative space for white UI text',
+    'premium mobile-first sports betting product',
+    'high contrast, shallow depth of field, no words, no logos, no watermark',
+  ].join(', ');
+
+  return `https://copilot-cn.bytedance.net/api/ide/v1/text_to_image?prompt=${encodeURIComponent(prompt)}&image_size=landscape_16_9`;
+}
+
 function getHotScore(market: Market) {
   return Math.round(market.volume / 1000 * 0.45 + market.traders / 100 * 0.25 + Math.abs(market.change24h) * 8);
 }
@@ -601,20 +762,48 @@ function formatCommentTime(value: string, locale: Locale) {
   }).format(date);
 }
 
-function formatDeadline(value: string, locale: Locale) {
-  return new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : locale === 'sw' ? 'sw-TZ' : 'en-US', {
-    year: 'numeric',
-    month: locale === 'zh' ? 'numeric' : 'short',
-    day: 'numeric',
-  }).format(new Date(value));
+function formatTimeLeft(value: string, locale: Locale) {
+  const diffMs = Math.max(new Date(value).getTime() - Date.now(), 0);
+  const totalMinutes = Math.max(1, Math.floor(diffMs / 60000));
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) {
+    if (locale === 'zh') {
+      return `${days}天${hours}小时`;
+    }
+    return `${days}d ${hours}h`;
+  }
+
+  if (locale === 'zh') {
+    return `${hours}小时${minutes}分`;
+  }
+
+  return `${hours}h ${minutes}m`;
+}
+
+function formatSecondsAgo(seconds: number, locale: Locale, justNow: string) {
+  if (seconds < 10) {
+    return justNow;
+  }
+
+  if (locale === 'zh') {
+    return `${seconds}秒前`;
+  }
+
+  return `${seconds}s ago`;
 }
 
 export function HomePage() {
   const { locale, t } = useI18n();
   const copy = pageCopy[locale];
+  const portfolio = useAppStore((state) => state.portfolio);
   const [markets, setMarkets] = useState<Market[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [tradeOutcome, setTradeOutcome] = useState<OutcomeId | null>(null);
+  const [leaderboard, setLeaderboard] = useState<Leaderboard | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -622,12 +811,15 @@ export function HomePage() {
       setMarkets(items);
       setLoading(false);
     });
+    leaderboardService.getSeasonLeaderboard(locale).then(setLeaderboard);
   }, [locale]);
 
   const hotMarkets = useMemo(() => [...markets].sort((a, b) => getTodayVolume(b) - getTodayVolume(a)), [markets]);
   const activeMarket = hotMarkets[activeIndex % Math.max(hotMarkets.length, 1)];
   const activeComments = activeMarket ? marketComments[activeMarket.id] ?? [] : [];
   const rollingComments = activeComments.length > 0 ? [...activeComments, ...activeComments] : [];
+  const demoPicks = activeMarket ? getDemoPicks(activeMarket) : [];
+  const watchingNow = activeMarket ? getWatchingNow(activeMarket) : 0;
 
   useEffect(() => {
     if (hotMarkets.length <= 1) {
@@ -654,36 +846,79 @@ export function HomePage() {
     );
   }
 
-  const hotTopicMarkets = hotMarkets.slice(0, 8);
+  const hotTopicMarkets = hotMarkets.slice(0, 5);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4">
-      <section className="trending-shell">
-        <div className="grid grid-rows-[1fr_auto] gap-2">
-          <div className="h-full overflow-hidden rounded-2xl border border-white/10 bg-white/[0.065] shadow-[0_12px_35px_rgba(0,0,0,0.18)]">
-            <div className="trending-card-grid">
-              <div className="trending-card-left border-b border-white/10 p-4">
-                <div className="mb-3 flex items-start justify-between gap-3">
-                  <div className="flex min-w-0 gap-3">
-                    <div className="grid h-11 w-11 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-cyan-300 to-violet-500 text-sm font-black text-[#071018]">
-                      {activeMarket.localizedContent[locale].title.slice(0, 1)}
+    <div className="mx-auto max-w-[1400px] space-y-4">
+      <section className="trending-shell xl:max-h-[60svh] xl:overflow-hidden">
+        <div className="grid content-start gap-2 xl:h-full xl:min-h-0 xl:grid-rows-[1fr_auto]">
+          <div className="overflow-hidden rounded-[28px] bg-white/[0.065] shadow-[0_12px_35px_rgba(0,0,0,0.18)] sm:rounded-2xl xl:h-full xl:min-h-0">
+            <div className="trending-card-grid h-full min-h-0">
+              <div className="trending-card-left flex h-full min-h-0 flex-col p-4">
+                <div className="mb-3 flex items-start justify-between">
+                  <div className="min-w-0">
+                    <div className="text-xs font-semibold text-white/42">
+                      {t(`markets.${activeMarket.category}` as never)} · {copy.featured}
                     </div>
-                    <div className="min-w-0">
-                      <div className="text-xs font-semibold text-white/42">
-                        {t(`markets.${activeMarket.category}` as never)} · {copy.featured}
-                      </div>
-                      <h1 className="mt-1 line-clamp-2 text-xl font-black leading-tight tracking-[-0.025em] text-white">
-                        {activeMarket.localizedContent[locale].title}
-                      </h1>
-                    </div>
-                  </div>
-                  <div className="flex shrink-0 gap-2 text-white/35">
-                    <Link2 className="h-4 w-4" />
-                    <Bookmark className="h-4 w-4" />
+                    <h1 className="mt-1 line-clamp-4 text-[26px] font-black leading-[1.08] tracking-[-0.04em] text-white sm:line-clamp-2 sm:text-xl">
+                      {activeMarket.localizedContent[locale].title}
+                    </h1>
                   </div>
                 </div>
 
-                <div className="divide-y divide-white/10 rounded-xl border border-white/10">
+                <div className="overflow-hidden rounded-3xl border border-rose-300/25 bg-gradient-to-br from-rose-400/16 via-amber-300/10 to-white/[0.045] shadow-[0_18px_50px_rgba(244,63,94,0.12)]">
+                  <div
+                    className="relative h-24 overflow-hidden border-b border-white/10 bg-slate-950 sm:h-20"
+                    style={{
+                      backgroundImage: `linear-gradient(90deg, rgba(5,8,22,0.36), rgba(5,8,22,0.74)), url("${getMarketCoverUrl(activeMarket)}")`,
+                      backgroundPosition: 'center',
+                      backgroundSize: 'cover',
+                    }}
+                  >
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(251,113,133,0.34),transparent_34%),linear-gradient(180deg,transparent,rgba(7,10,18,0.75))]" />
+                    <div className="absolute inset-x-3 top-3 flex items-center justify-between gap-3">
+                      <div className="inline-flex items-center gap-1.5 rounded-full border border-rose-200/25 bg-black/34 px-2.5 py-1 text-[11px] font-black uppercase tracking-[0.16em] text-rose-100 backdrop-blur-md">
+                        <Flame className="h-3.5 w-3.5" />
+                        {copy.hotLive}
+                      </div>
+                      <div className="rounded-full border border-amber-200/20 bg-black/34 px-2.5 py-1 text-[11px] font-black text-amber-100 backdrop-blur-md">
+                        {copy.endsIn} {formatTimeLeft(activeMarket.endsAt, locale)}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-end justify-between gap-4 p-4">
+                    <div>
+                      <div className="text-6xl font-black tracking-[-0.08em] text-white sm:text-5xl">
+                        {activeMarket.outcomes[0]?.probability ?? 50}%
+                      </div>
+                      <div className="mt-1 text-sm font-black text-emerald-100">{copy.thinkYes}</div>
+                    </div>
+                    <div className="pb-1 text-right text-xs font-semibold leading-5 text-white/58">
+                      <div>{formatCompactNumber(activeMarket.traders, locale)} {copy.peopleJoined}</div>
+                      <div>{formatCompactNumber(watchingNow, locale)} {copy.watchingNow}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid grid-cols-2 gap-2">
+                  {activeMarket.outcomes.slice(0, 2).map((outcome, index) => (
+                    <button
+                      key={outcome.id}
+                      type="button"
+                      onClick={() => setTradeOutcome(outcome.id)}
+                      className={cn(
+                        'h-16 rounded-2xl text-base font-black text-[#071018] shadow-lg transition active:scale-[0.98]',
+                        index === 0 ? 'bg-emerald-300 shadow-emerald-500/20' : 'bg-rose-300 shadow-rose-500/20',
+                      )}
+                    >
+                      {getBuyLabel(locale, outcome.label[locale])}
+                    </button>
+                  ))}
+                </div>
+
+                <RecentDemoPicks picks={demoPicks} market={activeMarket} copy={copy} locale={locale} />
+
+                <div className="hidden divide-y divide-white/10 rounded-xl border border-white/10">
                   {activeMarket.outcomes.map((outcome, index) => (
                     <OutcomeRow
                       key={outcome.id}
@@ -694,14 +929,14 @@ export function HomePage() {
                   ))}
                 </div>
 
-                <div className="mt-3 grid grid-cols-3 gap-2 text-xs">
+                <div className="mt-3 hidden grid-cols-3 gap-2 text-xs">
                   <Metric label={copy.heat} value={getHotScore(activeMarket).toLocaleString()} />
                   <Metric label={copy.volume} value={formatCompactNumber(activeMarket.volume, locale)} />
                   <Metric label={copy.traders} value={formatCompactNumber(activeMarket.traders, locale)} />
                 </div>
 
                 <div
-                  className="comment-marquee mt-3 rounded-xl border border-cyan-300/15 bg-cyan-300/[0.06] p-3"
+                  className="comment-marquee mt-3 hidden rounded-xl border border-cyan-300/15 bg-cyan-300/[0.06] p-3"
                 >
                   <div className="mb-1 flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.18em] text-cyan-100/70">
                     <MessageCircle className="h-3.5 w-3.5" />
@@ -728,18 +963,6 @@ export function HomePage() {
                 </div>
               </div>
 
-              <div className="flex min-h-[300px] flex-col p-4">
-                <div className="mb-2 flex items-center text-xs font-semibold text-white/45">
-                  <span>{activeMarket.localizedContent[locale].description}</span>
-                </div>
-
-                <div className="flex min-h-0 flex-1 flex-col rounded-xl border border-white/10 bg-black/10 p-3">
-                  <ProbabilityChart market={activeMarket} locale={locale} className="min-h-0 flex-1" />
-                  <div className="mt-1 flex shrink-0 justify-end text-[11px] font-bold text-white/34">
-                    {formatDeadline(activeMarket.endsAt, locale)} {copy.ends}
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
           <div className="flex gap-1.5 pl-1">
@@ -768,22 +991,44 @@ export function HomePage() {
           </div>
         </div>
 
-        <aside className="grid grid-rows-[1fr_auto] gap-2">
-          <div className="flex h-full flex-col rounded-2xl border border-white/10 bg-white/[0.065] p-3 shadow-[0_12px_35px_rgba(0,0,0,0.14)]">
+        <aside className="hidden h-full min-h-0 grid-rows-[auto_auto_minmax(210px,1fr)] gap-2 xl:grid">
+          <div className="rounded-2xl bg-cyan-300/[0.06] p-2.5 shadow-[0_12px_35px_rgba(0,0,0,0.14)]">
+            <SectionTitle icon={<TrendingUp className="h-4 w-4 text-cyan-200" />} title={copy.agentPick} compact />
+            <p className="mt-1.5 line-clamp-2 text-xs font-semibold leading-4 text-white/68">{activeMarket.agentSummary[locale]}</p>
+            <div className="mt-2 rounded-xl border border-white/10 bg-white/[0.055] p-2">
+              <div className="text-[10px] font-black uppercase tracking-[0.16em] text-white/34">{copy.balance}</div>
+              <div className="mt-0.5 text-xl font-black text-white">{formatCurrency(portfolio.demoBalance, locale)}</div>
+            </div>
+          </div>
+
+          <div className="rounded-2xl bg-white/[0.065] p-2.5 shadow-[0_12px_35px_rgba(0,0,0,0.14)]">
+            <SectionTitle icon={<Flame className="h-4 w-4 text-amber-200" />} title={copy.leaderboard} compact />
+            <div className="mt-1.5 grid gap-1">
+              {(leaderboard?.entries.slice(0, 3) ?? []).map((entry) => (
+                <div key={entry.userId} className="grid grid-cols-[24px_minmax(0,1fr)_auto] items-center gap-2 rounded-xl bg-white/[0.045] px-2 py-1.5">
+                  <span className="text-xs font-black text-amber-200">#{entry.rank}</span>
+                  <span className="truncate text-xs font-bold text-white/78">{entry.displayName}</span>
+                  <span className="text-[11px] font-black text-emerald-200">+{formatCompactNumber(entry.pnl, locale)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex h-full min-h-0 flex-col rounded-2xl bg-white/[0.065] p-2.5 shadow-[0_12px_35px_rgba(0,0,0,0.14)]">
             <div className="mb-2 flex items-center justify-between">
               <SectionTitle icon={<Flame className="h-4 w-4 text-rose-300" />} title={copy.hotRank} compact />
               <Link to={`/${locale}/markets`} className="text-xs font-bold text-white/42 hover:text-white">
                 {copy.explore}
               </Link>
             </div>
-            <div className="grid flex-1 gap-1" style={{ gridTemplateRows: `repeat(${hotTopicMarkets.length}, minmax(0, 1fr))` }}>
+            <div className="grid auto-rows-min gap-1 overflow-visible">
               {hotTopicMarkets.map((market, index) => (
                 <button
                   key={market.id}
                   type="button"
                   onClick={() => setActiveIndex(index)}
                   className={cn(
-                    'grid h-full grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-2 py-2 text-left transition',
+                    'grid min-h-8 grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-2 rounded-lg px-2 py-1.5 text-left transition',
                     index === activeIndex % hotMarkets.length ? 'bg-rose-300/12' : 'hover:bg-white/[0.06]',
                   )}
                 >
@@ -796,7 +1041,6 @@ export function HomePage() {
               ))}
             </div>
           </div>
-          <div className="h-1.5" aria-hidden="true" />
         </aside>
       </section>
 
@@ -806,6 +1050,91 @@ export function HomePage() {
           {hotMarkets.map((market) => <MiniMarketCard key={market.id} market={market} />)}
         </div>
       </section>
+
+      {tradeOutcome ? (
+        <TradeModal market={activeMarket} outcomeId={tradeOutcome} mode="demo" onClose={() => setTradeOutcome(null)} />
+      ) : null}
+    </div>
+  );
+}
+
+function getBuyLabel(locale: Locale, label: string) {
+  if (locale === 'zh') {
+    return `买 ${label}`;
+  }
+
+  if (locale === 'sw') {
+    return `Nunua ${label}`;
+  }
+
+  return `Buy ${label}`;
+}
+
+function getBuyActionLabel(locale: Locale) {
+  if (locale === 'zh') {
+    return '买';
+  }
+
+  if (locale === 'sw') {
+    return 'Nunua';
+  }
+
+  return 'Buy';
+}
+
+function RecentDemoPicks({
+  picks,
+  market,
+  copy,
+  locale,
+}: {
+  picks: DemoPick[];
+  market: Market;
+  copy: (typeof pageCopy)[Locale];
+  locale: Locale;
+}) {
+  const feedPicks = [...picks, ...picks, ...picks];
+
+  return (
+    <div className="mt-3 min-h-0 overflow-hidden rounded-2xl xl:flex-1">
+      <div className="relative h-[124px] min-h-0 overflow-hidden xl:h-full">
+        <div className="demo-pick-feed-track grid gap-2">
+          {feedPicks.map((pick, index) => {
+            const outcome = market.outcomes.find((item) => item.id === pick.outcomeId) ?? market.outcomes[0];
+            const isNo = pick.outcomeId === 'no';
+            return (
+              <div
+                key={`${pick.id}-${index}`}
+                className="grid grid-cols-[34px_minmax(0,1fr)_auto] items-center gap-2 rounded-2xl bg-white/[0.045] px-2.5 py-2"
+              >
+                <img
+                  src={pick.avatarUrl}
+                  alt=""
+                  loading="lazy"
+                  className="h-8 w-8 rounded-full object-cover ring-1 ring-white/12"
+                />
+                <div className="min-w-0">
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <span className="truncate text-xs font-black text-slate-400 dark:text-white/42">{pick.user}</span>
+                    <span className="shrink-0 text-[10px] font-bold text-slate-400 dark:text-white/34">
+                      {formatSecondsAgo(pick.secondsAgo, locale, copy.justNow)}
+                    </span>
+                  </div>
+                  <div className={cn('mt-0.5 flex items-center gap-1.5 text-[11px] font-black', isNo ? 'text-rose-500 dark:text-rose-200' : 'text-emerald-600 dark:text-emerald-200')}>
+                    <span>{getBuyActionLabel(locale)}</span>
+                    <span className={cn('rounded-full px-1.5 py-0.5 text-[10px] font-black', isNo ? 'bg-rose-300/22 text-rose-600 dark:text-rose-100' : 'bg-emerald-300/22 text-emerald-700 dark:text-emerald-100')}>
+                      {outcome?.label[locale] ?? pick.outcomeId}
+                    </span>
+                  </div>
+                </div>
+                <div className="shrink-0 rounded-full bg-amber-200/10 px-2 py-1 text-right text-[11px] font-black text-amber-100/88">
+                  {formatCompactNumber(pick.amount, locale)} {copy.demoCash}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

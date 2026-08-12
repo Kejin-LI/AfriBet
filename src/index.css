@@ -191,13 +191,21 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb {
   animation-play-state: paused;
 }
 
+.demo-pick-feed-track {
+  animation: demo-pick-feed 30s linear infinite;
+}
+
+.demo-pick-feed-track:hover {
+  animation-play-state: paused;
+}
+
 .carousel-progress-fill {
   animation: carousel-progress 30s linear forwards;
 }
 
 .trending-shell {
   display: grid;
-  align-items: stretch;
+  align-items: start;
   gap: 1rem;
 }
 
@@ -216,18 +224,10 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb {
   }
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1180px) {
   .trending-shell {
+    align-items: stretch;
     grid-template-columns: minmax(0, 1fr) 260px;
-  }
-
-  .trending-card-grid {
-    grid-template-columns: 300px minmax(0, 1fr);
-  }
-
-  .trending-card-left {
-    border-right-width: 1px;
-    border-bottom-width: 0;
   }
 }
 
@@ -245,6 +245,16 @@ html[data-theme='light'] ::-webkit-scrollbar-thumb {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes demo-pick-feed {
+  from {
+    transform: translateY(0);
+  }
+
+  to {
+    transform: translateY(-50%);
   }
 }
 
